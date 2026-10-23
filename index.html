@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aidan Michael Allen | Interactive 3D Portfolio & Showcase</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        obsidian: '#080c14',
+                        neonCyan: '#00f2fe',
+                        neonEmerald: '#00f5a0',
+                        cyberPurple: '#a855f7',
+                        cyberCard: 'rgba(15, 23, 42, 0.75)',
+                        cyberBorder: 'rgba(255, 255, 255, 0.08)'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif'],
+                        mono: ['Fira Code', 'JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #080c14;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+        h1, h2, h3, h4, .font-heading {
+            font-family: 'Outfit', sans-serif;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #080c14;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00f5a0;
+        }
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-card {
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .glass-card:hover {
+            border-color: rgba(0, 245, 160, 0.45);
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 20px 40px -15px rgba(0, 245, 160, 0.2);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #00f2fe 0%, #00f5a0 50%, #a855f7 100%);
+            -webkit-background-clip: text;
+            background-clip: text; /* Standard property for cross-browser compatibility */
+            -webkit-text-fill-color: transparent;
+}
+        canvas {
+            outline: none;
+        }
+
+        /* Mouse Glow Spotlight */
+        #cursorGlow {
+            pointer-events: none;
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 242, 254, 0.12) 0%, rgba(0, 245, 160, 0.05) 40%, rgba(0,0,0,0) 70%);
+            transform: translate(-50%, -50%);
+            z-index: 1;
+            transition: width 0.3s, height 0.3s, opacity 0.3s;
+        }
+    </style>
+</head>
+<body class="selection:bg-cyan-500 selection:text-slate-950">
+
+    <!-- CURSOR GLOW LIGHT -->
+    <div id="cursorGlow"></div>
+
+    <!-- THREE.JS HERO CANVAS BACKGROUND -->
+    <div id="threeContainer" class="fixed inset-0 pointer-events-none z-0"></div>
+
+    <!-- NAVIGATION BAR -->
+    <nav class="fixed top-0 left-0 w-full z-40 glass-panel border-b border-slate-800/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <!-- Brand Logo -->
+            <a href="#" class="flex items-center gap-3 group pointer-events-auto">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-400 via-emerald-400 to-purple-500 flex items-center justify-center font-mono font-bold text-lg text-slate-950 shadow-lg shadow-cyan-500/20 group-hover:scale-105 transition-transform">
+                    AMA
+                </div>
+                <div class="flex flex-col">
+                    <span class="font-bold text-lg tracking-tight text-white group-hover:text-neonEmerald transition-colors">Aidan M. Allen</span>
+                    <span class="text-[10px] font-mono text-slate-400 tracking-wider">MS CSE @ Santa Clara</span>
+                </div>
+            </a>
+
+            <!-- Desktop Nav Links -->
+            <div class="hidden md:flex items-center space-x-1 lg:space-x-2 text-sm font-medium text-slate-300 pointer-events-auto">
+                <a href="#about" class="px-3 py-2 rounded-lg hover:text-neonEmerald hover:bg-slate-800/50 transition-all">About</a>
+                <a href="#projects" class="px-3 py-2 rounded-lg hover:text-neonEmerald hover:bg-slate-800/50 transition-all">Projects</a>
+                <a href="#simulator" class="px-3 py-2 rounded-lg hover:text-neonEmerald hover:bg-slate-800/50 transition-all flex items-center gap-1.5"><i data-lucide="calculator" class="w-3.5 h-3.5 text-neonCyan"></i>Trajectory Tool</a>
+                <a href="#skills" class="px-3 py-2 rounded-lg hover:text-neonEmerald hover:bg-slate-800/50 transition-all">Skills</a>
+                <a href="#experience" class="px-3 py-2 rounded-lg hover:text-neonEmerald hover:bg-slate-800/50 transition-all">Experience</a>
+                <a href="#contact" class="px-3 py-2 rounded-lg hover:text-neonEmerald hover:bg-slate-800/50 transition-all">Contact</a>
+            </div>
+
+            <!-- Action Button -->
+            <div class="hidden sm:flex items-center gap-3 pointer-events-auto">
+                <a href="#contact" class="px-5 py-2.5 text-sm font-bold rounded-xl bg-gradient-to-r from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 shadow-md shadow-emerald-500/20 hover:shadow-emerald-500/40 transition-all">
+                    Get in Touch
+                </a>
+            </div>
+
+            <!-- Mobile Menu Toggle -->
+            <button id="mobileMenuBtn" class="md:hidden text-slate-300 hover:text-white focus:outline-none pointer-events-auto">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Navigation Drawer -->
+        <div id="mobileMenu" class="hidden md:hidden glass-panel border-b border-slate-800 px-4 pt-2 pb-6 space-y-3 pointer-events-auto">
+            <a href="#about" class="mobile-nav-link block px-3 py-2 rounded-md text-base font-medium text-slate-200 hover:bg-slate-800">About</a>
+            <a href="#projects" class="mobile-nav-link block px-3 py-2 rounded-md text-base font-medium text-slate-200 hover:bg-slate-800">Projects</a>
+            <a href="#simulator" class="mobile-nav-link block px-3 py-2 rounded-md text-base font-medium text-slate-200 hover:bg-slate-800">Trajectory Tool</a>
+            <a href="#skills" class="mobile-nav-link block px-3 py-2 rounded-md text-base font-medium text-slate-200 hover:bg-slate-800">Skills</a>
+            <a href="#experience" class="mobile-nav-link block px-3 py-2 rounded-md text-base font-medium text-slate-200 hover:bg-slate-800">Experience</a>
+            <a href="#contact" class="mobile-nav-link block px-3 py-2 rounded-md text-base font-medium text-slate-200 hover:bg-slate-800">Contact</a>
+        </div>
+    </nav>
+
+    <!-- MAIN BODY CONTENT -->
+    <main class="relative z-10 pt-20">
+
+        <!-- HERO SECTION WITH 3D CANVAS FOCUS -->
+        <section id="about" class="min-h-[calc(100vh-80px)] flex items-center justify-center relative px-4 sm:px-6 lg:px-8 py-16">
+            <div class="max-w-5xl mx-auto text-center space-y-8">
+                
+                <!-- Status Badge -->
+                <div class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full glass-panel border border-emerald-500/30 text-neonEmerald text-xs sm:text-sm font-medium shadow-lg">
+                    <span class="w-2.5 h-2.5 rounded-full bg-neonEmerald animate-ping"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-neonEmerald -ml-5"></span>
+                    <span>Seeking Software Engineering & AI/ML Internships</span>
+                </div>
+
+                <!-- Main Heading -->
+                <div class="space-y-4">
+                    <h1 class="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-white">
+                        Aidan Michael Allen
+                    </h1>
+                    <p class="text-xl sm:text-3xl font-heading text-slate-300">
+                        <span class="gradient-text font-extrabold">Quantitative Math Rigor</span> × <span class="text-white font-bold">Software Engineering</span>
+                    </p>
+                </div>
+
+                <!-- Intro Bio -->
+                <p class="max-w-3xl mx-auto text-base sm:text-lg text-slate-300 leading-relaxed font-light">
+                    M.S. in Computer Science & Engineering student at <span class="text-white font-semibold">Santa Clara University</span> with a double major B.S. in <span class="text-white font-semibold">Computer Science and Mathematics</span> from California Lutheran University (Cum Laude, Presidential Scholar). Former NCAA D-III Men's Golf Captain combining native iOS app development, systems engineering, and statistical modeling.
+                </p>
+
+                <!-- Interactive 3D Cursor Hint -->
+                <div class="inline-flex items-center gap-2 text-xs font-mono text-cyan-400 bg-slate-900/90 px-4 py-2 rounded-xl border border-cyan-500/30 shadow-xl">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-neonEmerald animate-pulse"></i>
+                    <span>Move cursor across the screen to rotate 3D world & dynamic physics meshes</span>
+                </div>
+
+                <!-- Contact & Resume Badges -->
+                <div class="flex flex-wrap items-center justify-center gap-4 text-xs sm:text-sm text-slate-400">
+                    <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg glass-panel">
+                        <i data-lucide="map-pin" class="w-4 h-4 text-neonEmerald"></i>
+                        <span>Santa Clara, CA</span>
+                    </div>
+                    <a href="mailto:aidangolf16@gmail.com" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg glass-panel hover:text-neonEmerald transition-colors">
+                        <i data-lucide="mail" class="w-4 h-4 text-neonEmerald"></i>
+                        <span>aidangolf16@gmail.com</span>
+                    </a>
+                    <a href="tel:8016471133" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg glass-panel hover:text-neonEmerald transition-colors">
+                        <i data-lucide="phone" class="w-4 h-4 text-neonEmerald"></i>
+                        <span>(801) 647-1133</span>
+                    </a>
+                    <a href="https://www.linkedin.com/in/aidanallen20" target="_blank" rel="noopener" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg glass-panel hover:text-neonEmerald transition-colors">
+                        <i data-lucide="linkedin" class="w-4 h-4 text-neonEmerald"></i>
+                        <span>LinkedIn</span>
+                    </a>
+                </div>
+
+                <!-- Call To Action Buttons -->
+                <div class="flex flex-wrap items-center justify-center gap-4 pt-4">
+                    <a href="#projects" class="px-7 py-3.5 rounded-xl bg-gradient-to-r from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 font-extrabold text-sm tracking-wide shadow-lg shadow-emerald-500/20 hover:-translate-y-0.5 transition-all flex items-center gap-2">
+                        <i data-lucide="folder-code" class="w-4 h-4"></i>
+                        Explore Projects
+                    </a>
+                    <a href="#simulator" class="px-7 py-3.5 rounded-xl glass-panel hover:bg-slate-800 text-white font-semibold text-sm tracking-wide border border-slate-700 hover:border-cyan-500/50 hover:-translate-y-0.5 transition-all flex items-center gap-2">
+                        <i data-lucide="line-chart" class="w-4 h-4 text-neonCyan"></i>
+                        Trajectory Tool
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- QUICK STATS BAR -->
+        <section class="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                
+                <!-- Stat 1 -->
+                <div class="glass-card p-6 rounded-2xl border-l-4 border-l-emerald-400 space-y-2">
+                    <div class="flex items-center justify-between text-slate-400">
+                        <span class="text-xs font-mono font-bold uppercase tracking-wider">Leadership</span>
+                        <i data-lucide="trophy" class="w-5 h-5 text-emerald-400"></i>
+                    </div>
+                    <h3 class="text-xl font-extrabold text-white">NCAA Golf Captain</h3>
+                    <p class="text-xs text-slate-400">Cal Lutheran D-III | 18-20 hrs/wk maintaining 3.5 GPA</p>
+                </div>
+
+                <!-- Stat 2 -->
+                <div class="glass-card p-6 rounded-2xl border-l-4 border-l-cyan-400 space-y-2">
+                    <div class="flex items-center justify-between text-slate-400">
+                        <span class="text-xs font-mono font-bold uppercase tracking-wider">Education</span>
+                        <i data-lucide="graduation-cap" class="w-5 h-5 text-cyan-400"></i>
+                    </div>
+                    <h3 class="text-xl font-extrabold text-white">MS CS & Engineering</h3>
+                    <p class="text-xs text-slate-400">Santa Clara University (Expected 2028)</p>
+                </div>
+
+                <!-- Stat 3 -->
+                <div class="glass-card p-6 rounded-2xl border-l-4 border-l-purple-400 space-y-2">
+                    <div class="flex items-center justify-between text-slate-400">
+                        <span class="text-xs font-mono font-bold uppercase tracking-wider">Dual Major</span>
+                        <i data-lucide="binary" class="w-5 h-5 text-purple-400"></i>
+                    </div>
+                    <h3 class="text-xl font-extrabold text-white">BS CS & Mathematics</h3>
+                    <p class="text-xs text-slate-400">Cum Laude, Presidential Scholar Recipient</p>
+                </div>
+
+                <!-- Stat 4 -->
+                <div class="glass-card p-6 rounded-2xl border-l-4 border-l-amber-400 space-y-2">
+                    <div class="flex items-center justify-between text-slate-400">
+                        <span class="text-xs font-mono font-bold uppercase tracking-wider">Proficiency</span>
+                        <i data-lucide="code-2" class="w-5 h-5 text-amber-400"></i>
+                    </div>
+                    <h3 class="text-xl font-extrabold text-white">Java, Swift & Python</h3>
+                    <p class="text-xs text-slate-400">iOS Mobile, Statistical Models & Robotics</p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- FEATURED PROJECTS SECTION -->
+        <section id="projects" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-slate-800/80">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+                <div>
+                    <h2 class="text-xs font-mono font-bold tracking-widest text-neonEmerald uppercase mb-2">// PORTFOLIO SHOWCASE</h2>
+                    <h3 class="text-3xl sm:text-4xl font-extrabold text-white">Featured Projects & Capstones</h3>
+                </div>
+                
+                <!-- Category Filter Tabs -->
+                <div class="flex flex-wrap gap-2" id="projectFilters">
+                    <button data-filter="all" class="filter-tab active px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all bg-gradient-to-r from-cyan-400 to-emerald-400 text-slate-950">All Projects</button>
+                    <button data-filter="ios" class="filter-tab px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all glass-panel text-slate-300 hover:text-white">iOS & Mobile</button>
+                    <button data-filter="ds" class="filter-tab px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all glass-panel text-slate-300 hover:text-white">Data & Analytics</button>
+                    <button data-filter="systems" class="filter-tab px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all glass-panel text-slate-300 hover:text-white">Software Systems</button>
+                </div>
+            </div>
+
+            <!-- Projects Grid -->
+            <div id="projectsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Javascript populated -->
+            </div>
+        </section>
+
+        <!-- INTERACTIVE STROKES GAINED & TRAJECTORY SIMULATOR TOOL -->
+        <section id="simulator" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-slate-800/80">
+            <div class="glass-card rounded-3xl p-6 sm:p-10 border border-cyan-500/30 bg-gradient-to-br from-slate-900/90 via-slate-950 to-emerald-950/20 shadow-2xl relative overflow-hidden">
+                
+                <div class="max-w-3xl mb-8 space-y-3">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-cyan-500/10 text-cyan-400 text-xs font-mono font-semibold">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                        Math Capstone Demonstration
+                    </div>
+                    <h3 class="text-3xl font-extrabold text-white">Interactive Strokes Gained Trajectory Simulator</h3>
+                    <p class="text-slate-300 text-sm sm:text-base">
+                        Simulate Aidan's mathematical regression model. Adjust round metrics to dynamically plot the parabolic flight trajectory curve vs. PGA Tour baseline benchmarks.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                    <!-- Controls -->
+                    <div class="lg:col-span-6 space-y-5">
+                        
+                        <!-- Off The Tee -->
+                        <div class="space-y-1.5">
+                            <div class="flex justify-between text-xs font-semibold">
+                                <span class="text-white flex items-center gap-1.5"><i data-lucide="navigation-2" class="w-3.5 h-3.5 text-emerald-400"></i> SG: Off The Tee (Driving Distance/Accuracy)</span>
+                                <span id="valOTT" class="font-mono text-emerald-400">+0.25</span>
+                            </div>
+                            <input type="range" id="sliderOTT" min="-2.0" max="2.0" step="0.05" value="0.25" class="w-full accent-emerald-400 bg-slate-800 rounded-lg cursor-pointer h-2">
+                        </div>
+
+                        <!-- Approach -->
+                        <div class="space-y-1.5">
+                            <div class="flex justify-between text-xs font-semibold">
+                                <span class="text-white flex items-center gap-1.5"><i data-lucide="target" class="w-3.5 h-3.5 text-cyan-400"></i> SG: Approach The Green (Iron Accuracy)</span>
+                                <span id="valAPP" class="font-mono text-cyan-400">+0.40</span>
+                            </div>
+                            <input type="range" id="sliderAPP" min="-2.0" max="2.0" step="0.05" value="0.40" class="w-full accent-cyan-400 bg-slate-800 rounded-lg cursor-pointer h-2">
+                        </div>
+
+                        <!-- Around The Green -->
+                        <div class="space-y-1.5">
+                            <div class="flex justify-between text-xs font-semibold">
+                                <span class="text-white flex items-center gap-1.5"><i data-lucide="shield" class="w-3.5 h-3.5 text-purple-400"></i> SG: Around The Green (Short Game)</span>
+                                <span id="valARG" class="font-mono text-purple-400">+0.10</span>
+                            </div>
+                            <input type="range" id="sliderARG" min="-2.0" max="2.0" step="0.05" value="0.10" class="w-full accent-purple-400 bg-slate-800 rounded-lg cursor-pointer h-2">
+                        </div>
+
+                        <!-- Putting -->
+                        <div class="space-y-1.5">
+                            <div class="flex justify-between text-xs font-semibold">
+                                <span class="text-white flex items-center gap-1.5"><i data-lucide="flag" class="w-3.5 h-3.5 text-amber-400"></i> SG: Putting (Greens in Regulation)</span>
+                                <span id="valPUTT" class="font-mono text-amber-400">+0.30</span>
+                            </div>
+                            <input type="range" id="sliderPUTT" min="-2.0" max="2.0" step="0.05" value="0.30" class="w-full accent-amber-400 bg-slate-800 rounded-lg cursor-pointer h-2">
+                        </div>
+
+                    </div>
+
+                    <!-- Visual Canvas Arc Curve & Output -->
+                    <div class="lg:col-span-6 glass-panel p-6 rounded-2xl border border-slate-700/80 text-center space-y-4">
+                        <span class="text-xs font-mono font-bold text-slate-400 uppercase tracking-widest">LIVE TRAJECTORY & IMPACT CURVE</span>
+                        
+                        <!-- 2D Canvas Arc Plotter -->
+                        <div class="relative w-full h-40 bg-slate-950/80 rounded-xl border border-slate-800 overflow-hidden flex items-center justify-center">
+                            <canvas id="trajectory2DCanvas" class="w-full h-full"></canvas>
+                        </div>
+
+                        <div class="flex items-center justify-between px-2">
+                            <div class="text-left">
+                                <p class="text-xs text-slate-400">Total Strokes Gained</p>
+                                <div class="text-3xl font-extrabold font-mono gradient-text" id="totalSGResult">+1.05</div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs text-slate-400">Tour Ranking Prediction</p>
+                                <p class="text-xs sm:text-sm font-bold text-emerald-400" id="tourRankingEst">Top 20 Contender</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISUAL SKILLS MATRIX -->
+        <section id="skills" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-slate-800/80">
+            <div class="text-center max-w-3xl mx-auto mb-16 space-y-3">
+                <h2 class="text-xs font-mono font-bold tracking-widest text-neonEmerald uppercase">// TECHNICAL CAPABILITIES</h2>
+                <h3 class="text-3xl sm:text-4xl font-extrabold text-white">Skills Matrix</h3>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Column 1: Programming Languages -->
+                <div class="glass-card rounded-2xl p-6 space-y-6">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            <i data-lucide="code-2" class="w-6 h-6"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-white">Programming Languages</h4>
+                    </div>
+                    <div class="space-y-4" id="skillsLanguages"></div>
+                </div>
+
+                <!-- Column 2: iOS & Dev Tools -->
+                <div class="glass-card rounded-2xl p-6 space-y-6">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                            <i data-lucide="layers" class="w-6 h-6"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-white">iOS & Dev Tools</h4>
+                    </div>
+                    <div class="space-y-4" id="skillsFrameworks"></div>
+                </div>
+
+                <!-- Column 3: Mathematics & Analytics -->
+                <div class="glass-card rounded-2xl p-6 space-y-6">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2.5 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                            <i data-lucide="binary" class="w-6 h-6"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-white">Math & Analytics</h4>
+                    </div>
+                    <div class="space-y-4" id="skillsMath"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- WORK & EXPERIENCE TIMELINE -->
+        <section id="experience" class="py-20 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto border-t border-slate-800/80">
+            <div class="text-center max-w-3xl mx-auto mb-12 space-y-3">
+                <h2 class="text-xs font-mono font-bold tracking-widest text-neonEmerald uppercase">// CAREER ROADMAP</h2>
+                <h3 class="text-3xl sm:text-4xl font-extrabold text-white">Work Experience & Leadership</h3>
+            </div>
+
+            <div class="relative border-l-2 border-slate-800 ml-4 sm:ml-32 space-y-8">
+                
+                <!-- Cobot -->
+                <div class="relative pl-6 sm:pl-8 group">
+                    <div class="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-slate-900 border-2 border-emerald-400 group-hover:bg-emerald-400 transition-all"></div>
+                    <div class="glass-card rounded-2xl p-6 space-y-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                            <h4 class="text-lg font-bold text-white">Robotics Data Collection Operator</h4>
+                            <span class="text-xs font-mono px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 w-fit">Oct 2026 - Present</span>
+                        </div>
+                        <p class="text-sm font-semibold text-slate-300">Cobot • Full-time | Santa Clara, CA</p>
+                        <ul class="space-y-2 pt-2 text-xs sm:text-sm text-slate-400">
+                            <li class="flex items-start gap-2"><span class="text-emerald-400 font-bold">•</span><span>Operate robotic hardware to execute tasks and support ongoing development and testing.</span></li>
+                            <li class="flex items-start gap-2"><span class="text-emerald-400 font-bold">•</span><span>Troubleshoot hardware and software issues and identify actionable solutions in real-time.</span></li>
+                            <li class="flex items-start gap-2"><span class="text-emerald-400 font-bold">•</span><span>Develop creative testing approaches to explore new robotics capabilities in a fast-paced environment.</span></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Summit Creek -->
+                <div class="relative pl-6 sm:pl-8 group">
+                    <div class="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-slate-900 border-2 border-cyan-400 group-hover:bg-cyan-400 transition-all"></div>
+                    <div class="glass-card rounded-2xl p-6 space-y-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                            <h4 class="text-lg font-bold text-white">Technical Operations Specialist</h4>
+                            <span class="text-xs font-mono px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 w-fit">June 2026 - July 2026</span>
+                        </div>
+                        <p class="text-sm font-semibold text-slate-300">Summit Creek Capital Partners</p>
+                        <ul class="space-y-2 pt-2 text-xs sm:text-sm text-slate-400">
+                            <li class="flex items-start gap-2"><span class="text-cyan-400 font-bold">•</span><span>Evaluated and implemented company hardware solutions including workstations and monitors.</span></li>
+                            <li class="flex items-start gap-2"><span class="text-cyan-400 font-bold">•</span><span>Configured software systems, deployed company website, and supported core tech infrastructure.</span></li>
+                            <li class="flex items-start gap-2"><span class="text-cyan-400 font-bold">•</span><span>Integrated software tools and APIs to improve system connectivity and operational efficiency.</span></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- MesaGen LLC -->
+                <div class="relative pl-6 sm:pl-8 group">
+                    <div class="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-slate-900 border-2 border-purple-400 group-hover:bg-purple-400 transition-all"></div>
+                    <div class="glass-card rounded-2xl p-6 space-y-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                            <h4 class="text-lg font-bold text-white">Biotechnology Research Intern</h4>
+                            <span class="text-xs font-mono px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 w-fit">Aug 2021 - June 2022</span>
+                        </div>
+                        <p class="text-sm font-semibold text-slate-300">MesaGen LLC / Granite Technical Institute</p>
+                        <ul class="space-y-2 pt-2 text-xs sm:text-sm text-slate-400">
+                            <li class="flex items-start gap-2"><span class="text-purple-400 font-bold">•</span><span>Conducted computational modeling and data analysis examining cell division mechanisms.</span></li>
+                            <li class="flex items-start gap-2"><span class="text-purple-400 font-bold">•</span><span>Synthesized research findings and presented data in scientific team review sessions.</span></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Cal Lutheran Golf Leadership -->
+                <div class="relative pl-6 sm:pl-8 group">
+                    <div class="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-slate-900 border-2 border-amber-400 group-hover:bg-amber-400 transition-all"></div>
+                    <div class="glass-card rounded-2xl p-6 space-y-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                            <h4 class="text-lg font-bold text-white">Collegiate Golf Athlete & Team Captain</h4>
+                            <span class="text-xs font-mono px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 w-fit">Aug 2022 - May 2026</span>
+                        </div>
+                        <p class="text-sm font-semibold text-slate-300">California Lutheran University Men's Golf</p>
+                        <ul class="space-y-2 pt-2 text-xs sm:text-sm text-slate-400">
+                            <li class="flex items-start gap-2"><span class="text-amber-400 font-bold">•</span><span>Served as team captain; committed 18-20 hours weekly to training and regional/national NCAA competitions while maintaining 3.5 Cum Laude GPA.</span></li>
+                            <li class="flex items-start gap-2"><span class="text-amber-400 font-bold">•</span><span>Inducted into Chi Alpha Sigma National College Athlete Honor Society.</span></li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- CONTACT SECTION -->
+        <section id="contact" class="py-20 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto border-t border-slate-800/80">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                
+                <div class="space-y-6">
+                    <div>
+                        <h2 class="text-xs font-mono font-bold tracking-widest text-neonEmerald uppercase mb-2">// GET IN TOUCH</h2>
+                        <h3 class="text-3xl sm:text-4xl font-extrabold text-white">Let's Connect & Build Together</h3>
+                    </div>
+                    <p class="text-slate-300 leading-relaxed text-sm sm:text-base">
+                        I am currently seeking Software Engineering and AI/ML Internship opportunities where I can apply my quantitative math background and software development skills.
+                    </p>
+
+                    <div class="space-y-4 pt-2">
+                        <a href="mailto:aidangolf16@gmail.com" class="flex items-center gap-4 glass-card p-4 rounded-xl hover:border-emerald-500/50 transition-all">
+                            <div class="p-3 rounded-lg bg-emerald-500/10 text-emerald-400">
+                                <i data-lucide="mail" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-400">Email Address</p>
+                                <p class="text-sm font-semibold text-white">aidangolf16@gmail.com</p>
+                            </div>
+                        </a>
+
+                        <a href="tel:8016471133" class="flex items-center gap-4 glass-card p-4 rounded-xl hover:border-cyan-500/50 transition-all">
+                            <div class="p-3 rounded-lg bg-cyan-500/10 text-cyan-400">
+                                <i data-lucide="phone" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-400">Phone</p>
+                                <p class="text-sm font-semibold text-white">(801) 647-1133</p>
+                            </div>
+                        </a>
+
+                        <a href="https://www.linkedin.com/in/aidanallen20" target="_blank" rel="noopener" class="flex items-center gap-4 glass-card p-4 rounded-xl hover:border-purple-500/50 transition-all">
+                            <div class="p-3 rounded-lg bg-purple-500/10 text-purple-400">
+                                <i data-lucide="linkedin" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-400">LinkedIn Profile</p>
+                                <p class="text-sm font-semibold text-white">linkedin.com/in/aidanallen20</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Interactive Contact Form -->
+                <div class="glass-card rounded-2xl p-8 border border-cyan-500/30 space-y-6">
+                    <div class="space-y-2">
+                        <h4 class="text-2xl font-bold text-white">Send a Message</h4>
+                        <p class="text-xs text-slate-400">Reach out directly for opportunities or technical collaborations.</p>
+                    </div>
+
+                    <form id="contactForm" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-mono text-slate-300 mb-1">Your Name</label>
+                            <input type="text" required placeholder="Jane Doe" class="w-full px-4 py-3 rounded-xl bg-slate-900/80 border border-slate-700/80 text-white text-sm focus:outline-none focus:border-neonEmerald transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-mono text-slate-300 mb-1">Email Address</label>
+                            <input type="email" required placeholder="jane@company.com" class="w-full px-4 py-3 rounded-xl bg-slate-900/80 border border-slate-700/80 text-white text-sm focus:outline-none focus:border-neonEmerald transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-mono text-slate-300 mb-1">Message</label>
+                            <textarea rows="4" required placeholder="Hi Aidan, I saw your portfolio and would love to chat..." class="w-full px-4 py-3 rounded-xl bg-slate-900/80 border border-slate-700/80 text-white text-sm focus:outline-none focus:border-neonEmerald transition-colors"></textarea>
+                        </div>
+                        <button type="submit" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 font-extrabold text-sm tracking-wide shadow-lg shadow-emerald-500/20 block transition-all flex items-center justify-center gap-2">
+                            <i data-lucide="send" class="w-4 h-4"></i> Send Direct Message
+                        </button>
+                    </form>
+                    <div id="formSuccess" class="hidden text-center text-neonEmerald text-sm font-semibold p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+                        ✓ Message received! I'll get back to you shortly.
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- FOOTER -->
+        <footer class="py-12 border-t border-slate-800/80 text-center text-xs text-slate-500 space-y-3">
+            <p>© 2026 Aidan Michael Allen. Interactive WebGL Engine built with Three.js & Tailwind CSS.</p>
+        </footer>
+
+    </main>
+
+    <!-- PROJECT DETAILS MODAL -->
+    <div id="projectModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden opacity-0 transition-opacity duration-300">
+        <div class="glass-panel w-full max-w-3xl rounded-2xl max-h-[90vh] overflow-y-auto border border-slate-700 shadow-2xl relative p-6 sm:p-8 space-y-6">
+            <button id="closeModalBtn" class="absolute top-5 right-5 p-2 rounded-full bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div id="modalBody" class="space-y-6"></div>
+        </div>
+    </div>
+
+    <!-- THREE.JS HIGHLY INTERACTIVE 3D BACKGROUND ENGINE -->
+    <script>
+        function initThreeJS() {
+            const container = document.getElementById('threeContainer');
+            const scene = new THREE.Scene();
+            
+            scene.fog = new THREE.FogExp2(0x080c14, 0.025);
+
+            const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 18;
+
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+
+            // Ambient + Directional Soft Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+            scene.add(ambientLight);
+
+            const pointLight = new THREE.PointLight(0x00f2fe, 2, 50);
+            pointLight.position.set(10, 10, 10);
+            scene.add(pointLight);
+
+            const pointLight2 = new THREE.PointLight(0x00f5a0, 2, 50);
+            pointLight2.position.set(-10, -10, 10);
+            scene.add(pointLight2);
+
+            // 1. Central 3D Interactive Wireframe Golf Sphere
+            const worldGroup = new THREE.Group();
+
+            const golfGeo = new THREE.IcosahedronGeometry(3.6, 4);
+            const golfMat = new THREE.MeshStandardMaterial({
+                color: 0x00f2fe,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.28,
+                roughness: 0.2,
+                metalness: 0.8
+            });
+            const golfMesh = new THREE.Mesh(golfGeo, golfMat);
+            worldGroup.add(golfMesh);
+
+            // Inner Core Glowing Geometry
+            const coreGeo = new THREE.IcosahedronGeometry(1.8, 2);
+            const coreMat = new THREE.MeshBasicMaterial({
+                color: 0x00f5a0,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.45
+            });
+            const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+            worldGroup.add(coreMesh);
+
+            // 2. Dynamic Trajectory Mathematical Arc Mesh
+            const curvePoints = [];
+            for (let i = 0; i <= 80; i++) {
+                const t = i / 80;
+                const x = (t - 0.5) * 28;
+                const y = Math.sin(t * Math.PI) * 7 - 3;
+                const z = (Math.cos(t * Math.PI * 2) - 1) * 4;
+                curvePoints.push(new THREE.Vector3(x, y, z));
+            }
+            const curve = new THREE.CatmullRomCurve3(curvePoints);
+            const tubeGeo = new THREE.TubeGeometry(curve, 120, 0.1, 8, false);
+            const tubeMat = new THREE.MeshStandardMaterial({
+                color: 0x00f5a0,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.35,
+                emissive: 0x00f5a0,
+                emissiveIntensity: 0.2
+            });
+            const tubeMesh = new THREE.Mesh(tubeGeo, tubeMat);
+            worldGroup.add(tubeMesh);
+
+            // 3. Floating Geometric Quantum Particle Field
+            const particleCount = 350;
+            const particlesGeo = new THREE.BufferGeometry();
+            const posArray = new Float32Array(particleCount * 3);
+            const scaleArray = new Float32Array(particleCount);
+
+            for (let i = 0; i < particleCount * 3; i += 3) {
+                posArray[i] = (Math.random() - 0.5) * 45;
+                posArray[i + 1] = (Math.random() - 0.5) * 35;
+                posArray[i + 2] = (Math.random() - 0.5) * 35;
+                scaleArray[i / 3] = Math.random();
+            }
+            particlesGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+
+            const particlesMat = new THREE.PointsMaterial({
+                size: 0.12,
+                color: 0x00f2fe,
+                transparent: true,
+                opacity: 0.65
+            });
+            const particleSystem = new THREE.Points(particlesGeo, particlesMat);
+            worldGroup.add(particleSystem);
+
+            scene.add(worldGroup);
+
+            // Mouse Interaction Tracking for Parallax
+            let mouseX = 0;
+            let mouseY = 0;
+            let targetX = 0;
+            let targetY = 0;
+
+            const cursorGlow = document.getElementById('cursorGlow');
+
+            window.addEventListener('mousemove', (e) => {
+                mouseX = (e.clientX - window.innerWidth / 2) * 0.0012;
+                mouseY = (e.clientY - window.innerHeight / 2) * 0.0012;
+
+                // Move Spotlight Cursor Light
+                if (cursorGlow) {
+                    cursorGlow.style.left = `${e.clientX}px`;
+                    cursorGlow.style.top = `${e.clientY}px`;
+                }
+            });
+
+            // Window Resize Handler
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            // Continuous Animation & Parallax Loop
+            function animate() {
+                requestAnimationFrame(animate);
+
+                targetX += (mouseX - targetX) * 0.04;
+                targetY += (mouseY - targetY) * 0.04;
+
+                // Constant ambient rotation
+                golfMesh.rotation.y += 0.004;
+                golfMesh.rotation.x += 0.002;
+                coreMesh.rotation.y -= 0.006;
+
+                // Smooth Parallax World Shifts on Mouse Movement
+                worldGroup.rotation.y = targetX * 3.5;
+                worldGroup.rotation.x = -targetY * 3.5;
+                worldGroup.position.x = targetX * 8;
+                worldGroup.position.y = -targetY * 6;
+
+                // Subtle particle wave
+                particleSystem.rotation.y -= 0.001;
+
+                renderer.render(scene, camera);
+            }
+
+            animate();
+        }
+
+        // PORTFOLIO DATA & INTERACTION LOGIC
+        const PROJECTS_DATA = [
+            {
+                id: 'caddio',
+                title: 'Caddio - iOS Sports Tracking App',
+                category: 'ios',
+                shortDesc: 'CS Capstone iOS application tracking golf game formats (Nassau, Stableford, Skins) in real-time.',
+                tags: ['Swift', 'SwiftUI', 'Xcode', 'Supabase', 'OCR Scanner'],
+                image: 'https://placehold.co/600x350/064e3b/10b981?text=Caddio+iOS+App',
+                details: 'Developed a comprehensive iOS application in Swift and SwiftUI to track complex golf game formats. Designed a custom digital scorecard that calculates payouts and scores in real-time. Integrated Supabase database storage for round history and implemented Optical Character Recognition (OCR) to automatically convert physical scorecards into digital formats. Presented at California Lutheran University Festival of Scholars.'
+            },
+            {
+                id: 'strokes-gained',
+                title: 'Strokes Gained Regression & Ranking Model',
+                category: 'ds',
+                shortDesc: 'Math Capstone analyzing large PGA golf datasets using multiple linear regression.',
+                tags: ['Python', 'Excel', 'Multiple Regression', 'Statistical Modeling'],
+                image: 'https://placehold.co/600x350/0f172a/38bdf8?text=Strokes+Gained+Model',
+                details: 'Collected, cleaned, and evaluated a large dataset of PGA Tour statistics for Strokes Gained metrics. Constructed multiple linear regression models in Excel and Python to isolate the relative impact of Off-the-Tee, Approach, Around-the-Green, and Putting shots. Validated output by constructing a custom player ranking system and benchmarking against PGA Tour FedEx Cup standings.'
+            },
+            {
+                id: 'game-of-life',
+                title: "Conway's Game of Life Simulation",
+                category: 'systems',
+                shortDesc: 'Advanced Computer Programming Java Swing cellular automaton simulation with dynamic controls.',
+                tags: ['Java', 'Java Swing', 'OOP Design', 'Algorithms'],
+                image: 'https://placehold.co/600x350/0f172a/a855f7?text=Game+of+Life+Java',
+                details: 'Built an interactive simulation of Conway\'s Game of Life using Java Swing. Implemented object-oriented design principles to give users full interactive control over grid sizes, step speeds, cell density, and custom pattern generation.'
+            },
+            {
+                id: 'client-server',
+                title: 'Multi-Tier Client-Server System',
+                category: 'systems',
+                shortDesc: 'System software project demonstrating network socket communication and request-response handling.',
+                tags: ['C/C++', 'Socket Programming', 'Networking', 'TCP/IP'],
+                image: 'https://placehold.co/600x350/0f172a/f59e0b?text=Client-Server+System',
+                details: 'Collaborated in a team of four to build a multi-threaded client-server system showcasing socket programming, packet handling, and multi-user client-server synchronization.'
+            }
+        ];
+
+        const SKILLS_DATA = {
+            languages: [
+                { name: 'Java', level: 92 },
+                { name: 'Swift / SwiftUI', level: 90 },
+                { name: 'Python', level: 86 },
+                { name: 'MySQL / SQL', level: 82 }
+            ],
+            frameworks: [
+                { name: 'Xcode & iOS SDK', level: 90 },
+                { name: 'Supabase / Cloud DB', level: 84 },
+                { name: 'Java Swing GUI', level: 85 },
+                { name: 'GitHub / CI/CD', level: 88 }
+            ],
+            math: [
+                { name: 'Multiple Linear Regression', level: 94 },
+                { name: 'Statistical Data Analysis', level: 92 },
+                { name: 'Computational Mathematics', level: 90 },
+                { name: 'Problem-Solving & Algorithms', level: 94 }
+            ]
+        };
+
+        function renderProjects(filter = 'all') {
+            const grid = document.getElementById('projectsGrid');
+            grid.innerHTML = '';
+
+            const filtered = PROJECTS_DATA.filter(p => filter === 'all' || p.category === filter);
+
+            filtered.forEach(proj => {
+                const card = document.createElement('div');
+                card.className = 'glass-card rounded-2xl overflow-hidden flex flex-col justify-between group';
+                card.innerHTML = `
+                    <div>
+                        <div class="relative overflow-hidden aspect-video bg-slate-900">
+                            <img src="${proj.image}" alt="${proj.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            <button onclick="openModal('${proj.id}')" class="absolute inset-0 flex items-center justify-center bg-slate-950/75 opacity-0 group-hover:opacity-100 transition-opacity font-semibold text-sm text-neonEmerald gap-2">
+                                <i data-lucide="eye" class="w-5 h-5"></i>
+                                View Details & Case Study
+                            </button>
+                        </div>
+                        <div class="p-6 space-y-3">
+                            <h3 class="text-xl font-bold text-white group-hover:text-neonEmerald transition-colors">${proj.title}</h3>
+                            <p class="text-slate-400 text-sm leading-relaxed">${proj.shortDesc}</p>
+                            <div class="flex flex-wrap gap-1.5 pt-2">
+                                ${proj.tags.map(t => `<span class="px-2.5 py-1 rounded-md text-xs font-mono bg-slate-800/80 text-slate-300 border border-slate-700/60">${t}</span>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="px-6 pb-6 pt-2 flex items-center justify-between border-t border-slate-800/40">
+                        <button onclick="openModal('${proj.id}')" class="text-xs font-semibold text-neonEmerald hover:text-emerald-300 flex items-center gap-1">
+                            Full Case Study <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            lucide.createIcons();
+        }
+
+        function openModal(id) {
+            const proj = PROJECTS_DATA.find(p => p.id === id);
+            if (!proj) return;
+
+            const modal = document.getElementById('projectModal');
+            const modalBody = document.getElementById('modalBody');
+
+            modalBody.innerHTML = `
+                <div class="space-y-3">
+                    <span class="px-3 py-1 rounded-full text-xs font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">${proj.category}</span>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold text-white">${proj.title}</h2>
+                </div>
+                <div class="rounded-xl overflow-hidden aspect-video bg-slate-900 border border-slate-800">
+                    <img src="${proj.image}" alt="${proj.title}" class="w-full h-full object-cover">
+                </div>
+                <div class="space-y-3 text-slate-300 text-sm leading-relaxed">
+                    <h4 class="text-xs font-mono text-neonEmerald uppercase font-bold tracking-wider">// PROJECT BREAKDOWN</h4>
+                    <p>${proj.details}</p>
+                </div>
+                <div class="flex flex-wrap gap-1.5 pt-2">
+                    ${proj.tags.map(t => `<span class="px-2.5 py-1 rounded-md text-xs font-mono bg-slate-800 text-emerald-300 border border-emerald-500/30">${t}</span>`).join('')}
+                </div>
+            `;
+
+            lucide.createIcons();
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('opacity-0'), 10);
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('projectModal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }, 300);
+        }
+
+        function renderSkills() {
+            const renderCategory = (elId, list, colorClass) => {
+                const el = document.getElementById(elId);
+                el.innerHTML = list.map(item => `
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between text-xs font-medium">
+                            <span class="text-white font-semibold">${item.name}</span>
+                            <span class="text-emerald-400 font-mono">${item.level}%</span>
+                        </div>
+                        <div class="w-full h-2 rounded-full bg-slate-800 overflow-hidden p-0.5">
+                            <div class="h-full rounded-full ${colorClass}" style="width: ${item.level}%"></div>
+                        </div>
+                    </div>
+                `).join('');
+            };
+
+            renderCategory('skillsLanguages', SKILLS_DATA.languages, 'bg-emerald-400');
+            renderCategory('skillsFrameworks', SKILLS_DATA.frameworks, 'bg-cyan-400');
+            renderCategory('skillsMath', SKILLS_DATA.math, 'bg-purple-400');
+        }
+
+        // 2D CANVAS TRAJECTORY SIMULATOR DRAWING
+        function initTrajectoryCanvas() {
+            const canvas = document.getElementById('trajectory2DCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            function drawArc(totalSG) {
+                const w = canvas.width = canvas.parentElement.clientWidth;
+                const h = canvas.height = canvas.parentElement.clientHeight;
+
+                ctx.clearRect(0, 0, w, h);
+
+                // Grid ground line
+                ctx.beginPath();
+                ctx.moveTo(10, h - 20);
+                ctx.lineTo(w - 10, h - 20);
+                ctx.strokeStyle = '#334155';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                // Plot Curve based on total SG
+                const peakY = h - 20 - (Math.max(-1, totalSG + 1.5) * 25);
+                ctx.beginPath();
+                ctx.moveTo(20, h - 20);
+                ctx.quadraticCurveTo(w / 2, peakY, w - 20, h - 20);
+                
+                const grad = ctx.createLinearGradient(0, 0, w, 0);
+                grad.addColorStop(0, '#00f2fe');
+                grad.addColorStop(0.5, '#00f5a0');
+                grad.addColorStop(1, '#a855f7');
+                
+                ctx.strokeStyle = grad;
+                ctx.lineWidth = 3;
+                ctx.stroke();
+            }
+
+            const sOTT = document.getElementById('sliderOTT');
+            const sAPP = document.getElementById('sliderAPP');
+            const sARG = document.getElementById('sliderARG');
+            const sPUTT = document.getElementById('sliderPUTT');
+
+            function update() {
+                const ott = parseFloat(sOTT.value);
+                const app = parseFloat(sAPP.value);
+                const arg = parseFloat(sARG.value);
+                const putt = parseFloat(sPUTT.value);
+
+                document.getElementById('valOTT').textContent = (ott >= 0 ? '+' : '') + ott.toFixed(2);
+                document.getElementById('valAPP').textContent = (app >= 0 ? '+' : '') + app.toFixed(2);
+                document.getElementById('valARG').textContent = (arg >= 0 ? '+' : '') + arg.toFixed(2);
+                document.getElementById('valPUTT').textContent = (putt >= 0 ? '+' : '') + putt.toFixed(2);
+
+                const totalSG = (ott * 1.05) + (app * 1.25) + (arg * 0.90) + (putt * 0.95);
+                document.getElementById('totalSGResult').textContent = (totalSG >= 0 ? '+' : '') + totalSG.toFixed(2);
+
+                const rankEl = document.getElementById('tourRankingEst');
+                if (totalSG >= 1.5) rankEl.textContent = "Top 5 Tour Elite";
+                else if (totalSG >= 0.5) rankEl.textContent = "Top 20 Contender";
+                else if (totalSG >= -0.5) rankEl.textContent = "PGA Field Average";
+                else rankEl.textContent = "Needs Tuning";
+
+                drawArc(totalSG);
+            }
+
+            [sOTT, sAPP, sARG, sPUTT].forEach(s => s?.addEventListener('input', update));
+            window.addEventListener('resize', update);
+            update();
+        }
+
+        // INITIALIZE ON PAGE LOAD
+        window.onload = function() {
+            lucide.createIcons();
+            initThreeJS();
+            renderProjects();
+            renderSkills();
+            initTrajectoryCanvas();
+
+            // Mobile Menu Toggle
+            const mobileBtn = document.getElementById('mobileMenuBtn');
+            const mobileMenu = document.getElementById('mobileMenu');
+            mobileBtn?.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+            document.querySelectorAll('.mobile-nav-link').forEach(l => l.addEventListener('click', () => mobileMenu.classList.add('hidden')));
+
+            // Project Filters Logic
+            const filterBtns = document.querySelectorAll('#projectFilters .filter-tab');
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filterBtns.forEach(b => b.className = 'filter-tab px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all glass-panel text-slate-300 hover:text-white');
+                    btn.className = 'filter-tab active px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all bg-gradient-to-r from-cyan-400 to-emerald-400 text-slate-950';
+                    renderProjects(btn.getAttribute('data-filter'));
+                });
+            });
+
+            // Contact Form Event
+            const contactForm = document.getElementById('contactForm');
+            contactForm?.addEventListener('submit', (e) => {
+                e.preventDefault();
+                contactForm.reset();
+                const successMsg = document.getElementById('formSuccess');
+                if (successMsg) {
+                    successMsg.classList.remove('hidden');
+                    setTimeout(() => successMsg.classList.add('hidden'), 5000);
+                }
+            });
+
+            // Modal Logic
+            document.getElementById('closeModalBtn')?.addEventListener('click', closeModal);
+            document.getElementById('projectModal')?.addEventListener('click', (e) => {
+                if (e.target.id === 'projectModal') closeModal();
+            });
+        };
+    </script>
+</body>
+</html>
